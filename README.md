@@ -4,13 +4,13 @@ Material for MS Challenge GUTS 2022
 
 # Message structure
 
-Client to server 
+## Client to server 
 
 requestjoin:name
 moveto:posX,posY
 heartbeat:
 
-Server to client (note wall and floor message repeats X and Y coord pairs per segment, i.e. one message for multiple walls)
+## Server to client (note wall and floor message repeats X and Y coord pairs per segment, i.e. one message for multiple walls)
 
 playerjoined:name,posX,posY
 
