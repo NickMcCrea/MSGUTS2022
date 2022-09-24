@@ -4,8 +4,8 @@ import time
 import random
  
 
-msgFromClient       = "requestjoin:jim"
-name = "jim"
+msgFromClient       = "requestjoin:mydisplayname"
+name = "mydisplayname"
 
 bytesToSend         = str.encode(msgFromClient)
 
@@ -13,20 +13,40 @@ serverAddressPort   = ("127.0.0.1", 11000)
 
 bufferSize          = 1024
 
-moveInterval = 3
+#bunch of timers and intervals for executing some sample commands
+moveInterval = 10
+timeSinceMove = time.time()
+
 heartbeatInterval = 5
+timeSinceHeartbeat = time.time()
+
+stopInterval = 30
+timeSinceStop = time.time()
+
+directionMoveInterval = 15
+timeSinceDirectionMove = time.time()
+
+directionFaceInterval = 9
+timeSinceDirectionFace = time.time()
+
+directions = ["n","s","e","w","nw","sw","ne","se"]
 
 
 # Create a UDP socket
 UDPClientSocket = socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)
-
  
 # Send to server using created UDP socket
 UDPClientSocket.sendto(bytesToSend, serverAddressPort)
 
  
-timeSinceMove = time.time()
-timeSinceHeartbeat = time.time()
+
+
+
+def SendMessage(requestmovemessage):
+    bytesToSend = str.encode(requestmovemessage)
+    UDPClientSocket.sendto(bytesToSend, serverAddressPort)
+
+
 
 while True:
 
@@ -35,7 +55,7 @@ while True:
     ##uncomment to see message format from server
     #print(msgFromServer)
     
-    if "playerposition" in msgFromServer:
+    if "playerupdate" in msgFromServer:
         pos = msgFromServer.split(":")[1]
         posSplit = pos.split(",")
         posx = float(posSplit[0])
@@ -44,31 +64,54 @@ while True:
 
     now = time.time()
 
-    #every 5 seconds, request to move to a random point nearby. No pathfinding, server will 
+    #every few seconds, request to move to a random point nearby. No pathfinding, server will 
     #attempt to move in straight line.
     if (now - timeSinceMove) > moveInterval:
-
         randomX = random.randrange(-50,50)
         randomY = random.randrange(-50,50)
         posx += randomX
         posy += randomY
 
         timeSinceMove = time.time()
-
         requestmovemessage = "moveto:" + str(posx)  + "," + str(posy)
-
-        bytesToSend = str.encode(requestmovemessage)
-        UDPClientSocket.sendto(bytesToSend, serverAddressPort)
+        SendMessage(requestmovemessage)
         print(requestmovemessage)
 
     #heartbeat - server will remove player if it doesn't hear from client every few seconds at least
     if (now - timeSinceHeartbeat) > heartbeatInterval:
         timeSinceHeartbeat = time.time()
         heartbeatMessage = "heartbeat:"
-        bytesToSend = str.encode(heartbeatMessage)
-        UDPClientSocket.sendto(bytesToSend, serverAddressPort)
+        SendMessage(heartbeatMessage)
         print(heartbeatMessage)
 
+        #let's fire while we're at it
+        fireMessage = "fire:"
+        SendMessage(fireMessage)
+        print(fireMessage)
+        
+
+    if(now - timeSinceStop) > stopInterval:
+        stopMessage = "stop:"
+        SendMessage(stopMessage)
+        timeSinceStop = time.time()
+        print(stopMessage)
+
+
+    if(now - timeSinceDirectionMove) > directionMoveInterval:
+
+        randomDirection = random.choice(directions)
+        directionMoveMessage = "movedirection:" + randomDirection
+        SendMessage(directionMoveMessage)
+        timeSinceDirectionMove = time.time()
+        print(directionMoveMessage)
+
+    if(now - timeSinceDirectionFace) > directionFaceInterval:
+
+        randomDirection = random.choice(directions)
+        directionFaceMessage = "facedirection:" + randomDirection
+        SendMessage(directionFaceMessage)
+        timeSinceDirectionFace = time.time()
+        print(directionFaceMessage)
 
 
 
