@@ -17,8 +17,8 @@ bufferSize          = 1024
 moveInterval = 10
 timeSinceMove = time.time()
 
-heartbeatInterval = 5
-timeSinceHeartbeat = time.time()
+fireInterval = 5
+timeSinceFire = time.time()
 
 stopInterval = 30
 timeSinceStop = time.time()
@@ -77,17 +77,13 @@ while True:
         SendMessage(requestmovemessage)
         print(requestmovemessage)
 
-    #heartbeat - server will remove player if it doesn't hear from client every few seconds at least
-    if (now - timeSinceHeartbeat) > heartbeatInterval:
-        timeSinceHeartbeat = time.time()
-        heartbeatMessage = "heartbeat:"
-        SendMessage(heartbeatMessage)
-        print(heartbeatMessage)
-
-        #let's fire while we're at it
+    #let's fire
+    if (now - timeSinceFire) > fireInterval:
+        timeSinceFire = time.time()
         fireMessage = "fire:"
         SendMessage(fireMessage)
         print(fireMessage)
+       
         
 
     if(now - timeSinceStop) > stopInterval:
